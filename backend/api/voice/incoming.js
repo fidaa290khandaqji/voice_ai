@@ -5,13 +5,20 @@ async function handleIncomingCall(req, res, broadcastToDashboard) {
   const twiml = new VoiceResponse();
   const callSid = req.body.CallSid;
   const from = req.body.From;
+  const restaurantId = req.params.restaurantId; // Get from URL
 
   // Create initial call record
-  await Call.create({ sid: callSid, from: from, transcript: [], emotionSummary: { happy:0, angry:0, neutral:0 } });
+  await Call.create({ 
+    restaurantId: restaurantId, 
+    sid: callSid, 
+    from: from, 
+    transcript: [], 
+    emotionSummary: { happy:0, angry:0, neutral:0 } 
+  });
 
   const gather = twiml.gather({
     input: 'speech',
-    action: '/api/voice/gather',
+    action: `/api/voice/gather/${restaurantId}`,
     language: 'ar-PS',
     speechTimeout: 'auto',
   });

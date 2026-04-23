@@ -5,6 +5,7 @@ const { Call, Order } = require('../../lib/storage');
 async function handleGather(req, res, broadcastToDashboard) {
   const speechResult = req.body.SpeechResult;
   const callSid = req.body.CallSid;
+  const restaurantId = req.params.restaurantId;
   const twiml = new VoiceResponse();
 
   if (speechResult) {
@@ -52,6 +53,7 @@ async function handleGather(req, res, broadcastToDashboard) {
     // Check for order completion
     if (aiResponse.includes('تم تثبيت طلبك') || aiResponse.includes('صحتين وعافية')) {
       await Order.create({
+        restaurantId: restaurantId,
         customerPhone: req.body.From,
         items: [{ name: 'Voice Order', quantity: 1, price: 0 }],
         totalPrice: 0,
@@ -66,7 +68,7 @@ async function handleGather(req, res, broadcastToDashboard) {
     // Listen again
     twiml.gather({
       input: 'speech',
-      action: '/api/voice/gather',
+      action: `/api/voice/gather/${restaurantId}`,
       language: 'ar-PS',
       speechTimeout: 'auto',
     });
@@ -74,7 +76,7 @@ async function handleGather(req, res, broadcastToDashboard) {
     twiml.say({ language: 'ar-XA' }, 'عذراً، لم أسمعك جيداً. هل يمكنك التكرار؟');
     twiml.gather({
       input: 'speech',
-      action: '/api/voice/gather',
+      action: `/api/voice/gather/${restaurantId}`,
       language: 'ar-PS',
       speechTimeout: 'auto',
     });
