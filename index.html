@@ -55,26 +55,17 @@ html{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
+/* ── CONSTANTS ─────────────────────────────────────────── */
+const API_BASE = 'http://localhost:5000';
+const WS_URL = 'ws://localhost:5000';
+
 /* ── DATA ──────────────────────────────────────────────── */
-const ORDERS = [
+const INITIAL_ORDERS = [
   {id:'ORD-001',customer:'أحمد أبو علي',phone:'0599-123-456',items:['شاورما دجاج ×2','بيبسي ×2'],total:28,status:'active',time:'14:32',emotion:'😊 سعيد',discount:0,address:'رام الله - البيرة'},
-  {id:'ORD-002',customer:'فاطمة حسين',phone:'0598-765-432',items:['فلافل صحن','حمص','عيش ×3'],total:22,status:'preparing',time:'14:28',emotion:'😐 محايد',discount:5,address:'الرام - شارع القدس'},
-  {id:'ORD-003',customer:'محمد سالم',phone:'0597-321-654',items:['مندي دجاج','شوربة عدس'],total:45,status:'ready',time:'14:15',emotion:'😄 متحمس',discount:10,address:'بيرزيت - المدخل'},
-  {id:'ORD-004',customer:'سارة عودة',phone:'0599-987-123',items:['برغر لحم','بطاطا مقلية','عصير'],total:35,status:'delivered',time:'14:05',emotion:'😍 راضٍ جداً',discount:0,address:'نابلس - وسط المدينة'},
-  {id:'ORD-005',customer:'خالد النجار',phone:'0596-456-789',items:['كنافة ×3','قهوة ×2'],total:18,status:'cancelled',time:'13:55',emotion:'😠 مستاء',discount:15,address:'جنين - حي الزهراء'},
-  {id:'ORD-006',customer:'ريم أبو سمرة',phone:'0599-234-567',items:['مجدرة','سلطة ×2','عيش'],total:20,status:'active',time:'14:35',emotion:'🥰 سعيد جداً',discount:0,address:'طولكرم - الشارع الرئيسي'},
 ];
 const WEEKLY=[65,80,72,90,85,110,95];
 const HOURLY=[5,8,12,22,35,48,60,72,68,55,40,28,20,15,10,12,18,30,45,55,40,28,15,8];
-const CONV=[
-  {role:'ai',text:'أهلاً وسهلاً، مطعم الزيتون الذهبي — معك المساعد الذكي، كيف أقدر أساعدك؟',time:'0:01'},
-  {role:'c',text:'مرحبا، بدي أطلب شاورما دجاج كبيرة وبيبسي',time:'0:08'},
-  {role:'ai',text:'تمام! شاورما دجاج كبيرة وبيبسي 😄 — خليني أضيف لك بطاطا مجانية كعرض اليوم!',time:'0:14'},
-  {role:'c',text:'يسلمو! وين التوصيل؟',time:'0:22'},
-  {role:'ai',text:'نوصل لكل مناطق رام الله والبيرة. ما هو عنوانك؟',time:'0:26'},
-  {role:'c',text:'شارع الإرسال، بناية النور، طابق 3',time:'0:35'},
-  {role:'ai',text:'ممتاز! الإجمالي 28₪، التوصيل 45-60 دقيقة. هل تؤكد الطلب؟',time:'0:42'},
-];
+
 const STATUS_LABEL={active:'نشط',preparing:'قيد التحضير',ready:'جاهز',delivered:'تم التوصيل',cancelled:'ملغي'};
 const STATUS_COLOR={active:'#2196f3',preparing:'#f59e0b',ready:'#00b96b',delivered:'#9898b2',cancelled:'#ef4444'};
 
@@ -169,8 +160,8 @@ const Nav = ({page,setPage,dark,setDark,toggleTweaks}) => {
       <div style={{display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
         <Logo size={38}/>
         <div>
-          <div className="heading" style={{fontSize:13,fontWeight:800,color:'var(--text)',lineHeight:1.1,letterSpacing:'.5px'}}>SMART VOICE</div>
-          <div style={{fontSize:9.5,fontWeight:600,letterSpacing:'1.5px',background:'var(--grad)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>RECEPTION AI</div>
+          <div className="heading" style={{fontSize:13,fontWeight:800,color:'var(--text)',lineHeight:1.1,letterSpacing:'.5px'}}>ZEINA AI</div>
+          <div style={{fontSize:9.5,fontWeight:600,letterSpacing:'1.5px',background:'var(--grad)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>SMART VOICE RECEPTION</div>
         </div>
       </div>
       {/* Nav items */}
@@ -234,6 +225,12 @@ const Landing = ({setPage}) => {
           <button onClick={()=>setPage('call')} style={{padding:'14px 32px',borderRadius:12,border:'none',background:'var(--grad)',color:'#fff',fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'Tajawal',boxShadow:'0 8px 24px rgba(33,150,243,.35)',transition:'all .25s',display:'flex',alignItems:'center',gap:8}}>
             <Ic n="phone" s={16} c="#fff"/> جرّب المكالمة الذكية
           </button>
+          <button onClick={() => {
+            fetch(`${API_BASE}/api/simulate-call`, { method: 'POST' });
+            setPage('call');
+          }} style={{padding:'14px 32px',borderRadius:12,border:'1px solid #00b96b',background:'rgba(0,185,107,.1)',color:'#00b96b',fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'Tajawal',transition:'all .25s',display:'flex',alignItems:'center',gap:8}}>
+            <Ic n="zap" s={16} c="#00b96b"/> تشغيل محاكاة حية
+          </button>
           <button onClick={()=>setPage('dashboard')} style={{padding:'14px 32px',borderRadius:12,border:'1px solid var(--border)',background:'var(--card)',color:'var(--text)',fontSize:15,fontWeight:600,cursor:'pointer',fontFamily:'Tajawal',transition:'all .25s'}}>
             عرض لوحة التحكم
           </button>
@@ -254,7 +251,7 @@ const Landing = ({setPage}) => {
       <div style={{padding:'70px 32px',maxWidth:1160,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:52}}>
           <div style={{fontSize:12,color:'#2196f3',fontWeight:700,marginBottom:10,letterSpacing:'1px',textTransform:'uppercase'}}>المميزات</div>
-          <h2 className="heading" style={{fontSize:34,fontWeight:900,color:'var(--text)'}}>لماذا <Grad>SMART VOICE AI</Grad>؟</h2>
+          <h2 className="heading" style={{fontSize:34,fontWeight:900,color:'var(--text)'}}>لماذا <Grad>ZEINA AI</Grad>؟</h2>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))',gap:20}}>
           {features.map((f,i)=>(
@@ -284,16 +281,14 @@ const Landing = ({setPage}) => {
 };
 
 /* ══ CALL INTERFACE ═══════════════════════════════════════ */
-const CallInterface = () => {
-  const [calling,setCalling]=useState(true);
-  const [convIdx,setConvIdx]=useState(0);
-  const [muted,setMuted]=useState(false);
+const CallInterface = ({ liveCall, transcription, emotion }) => {
+  const [calling,setCalling]=useState(!!liveCall);
   const [secs,setSecs]=useState(0);
   const chatRef=useRef(null);
 
+  useEffect(() => { setCalling(!!liveCall); }, [liveCall]);
   useEffect(()=>{if(!calling)return;const t=setInterval(()=>setSecs(s=>s+1),1000);return()=>clearInterval(t);},[calling]);
-  useEffect(()=>{if(convIdx<CONV.length-1){const t=setTimeout(()=>setConvIdx(c=>c+1),2400);return()=>clearTimeout(t);}},[convIdx]);
-  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[convIdx]);
+  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;}, [transcription]);
 
   const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 
@@ -309,11 +304,13 @@ const CallInterface = () => {
           </>}
           <div style={{width:66,height:66,borderRadius:'50%',background:'linear-gradient(135deg,#2196f3,#00b96b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0,animation:'pulse 2.5s infinite',zIndex:1}}>👨‍💼</div>
           <div style={{flex:1}}>
-            <div className="heading" style={{fontSize:20,fontWeight:800,color:'var(--text)'}}>أحمد أبو علي</div>
-            <div style={{fontSize:14,color:'var(--text2)',marginTop:2}}>0599-123-456</div>
+            <div className="heading" style={{fontSize:20,fontWeight:800,color:'var(--text)'}}>{liveCall ? 'مكالمة واردة...' : 'جاهز للاستقبال'}</div>
+            <div style={{fontSize:14,color:'var(--text2)',marginTop:2}}>{liveCall ? liveCall.from : 'لا توجد مكالمات نشطة'}</div>
             <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
-              <Pill color="#2196f3" icon="users">زبون متكرر</Pill>
-              <Pill color="#00b96b" icon="smile">😊 سعيد</Pill>
+              <Pill color="#2196f3" icon="users">تحليل حي</Pill>
+              <Pill color={emotion === 'angry' ? '#ef4444' : '#00b96b'} icon="smile">
+                {emotion === 'angry' ? '😠 مستاء' : emotion === 'happy' ? '😊 سعيد' : '😐 محايد'}
+              </Pill>
             </div>
           </div>
           <div style={{textAlign:'center',minWidth:80}}>
@@ -321,13 +318,9 @@ const CallInterface = () => {
             <div style={{fontSize:11,color:'var(--text3)',fontWeight:500}}>مدة المكالمة</div>
           </div>
           <div style={{display:'flex',gap:10}}>
-            <button onClick={()=>setMuted(m=>!m)} style={{width:44,height:44,borderRadius:12,border:`1px solid ${muted?'#ef4444':'var(--border)'}`,background:muted?'rgba(239,68,68,.1)':'var(--bg3)',color:muted?'#ef4444':'var(--text2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .2s'}}>
-              <Ic n="mic" s={18}/>
-            </button>
             <button onClick={()=>setCalling(false)} style={{width:44,height:44,borderRadius:12,border:'none',background:'#ef4444',color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
               <Ic n="x" s={18} c="#fff"/>
             </button>
-            {!calling&&<button onClick={()=>{setCalling(true);setConvIdx(0);setSecs(0);}} style={{padding:'0 14px',height:44,borderRadius:12,border:'none',background:'#00b96b',color:'#fff',cursor:'pointer',fontFamily:'Tajawal',fontWeight:700,fontSize:13}}>مكالمة جديدة</button>}
           </div>
         </div>
 
@@ -335,13 +328,13 @@ const CallInterface = () => {
         <div className="card-shadow" style={{background:'var(--card)',borderRadius:18,flex:1,border:'1px solid var(--border)',display:'flex',flexDirection:'column',overflow:'hidden',minHeight:400}}>
           <div style={{padding:'14px 20px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:10}}>
             <Ic n="bot" s={17} c="#764ba2"/>
-            <span className="heading" style={{fontWeight:700,color:'var(--text)',fontSize:14}}>المحادثة الحية</span>
+            <span className="heading" style={{fontWeight:700,color:'var(--text)',fontSize:14}}>التفريغ النصي المباشر</span>
             {calling&&<span style={{marginRight:'auto',display:'flex',alignItems:'center',gap:5,fontSize:11,color:'#00b96b',fontWeight:600}}>
               <span style={{width:7,height:7,borderRadius:'50%',background:'#00b96b',display:'inline-block',animation:'pulse 1s infinite'}}/>مباشر
             </span>}
           </div>
-          <div ref={chatRef} style={{flex:1,overflowY:'auto',padding:18,display:'flex',flexDirection:'column',gap:14}}>
-            {CONV.slice(0,convIdx+1).map((msg,i)=>(
+          <div ref={chatRef} style={{flex:1,overflowY:'auto',padding:18,display:'flex',flexDirection:'column',gap:14, minHeight: 300}}>
+            {transcription.map((msg,i)=>(
               <div key={i} style={{display:'flex',gap:10,flexDirection:msg.role==='ai'?'row':'row-reverse',animation:'fadeUp .3s ease'}}>
                 <div style={{width:34,height:34,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:msg.role==='ai'?'linear-gradient(135deg,#764ba2,#2196f3)':'rgba(33,150,243,.12)',fontSize:msg.role==='ai'?12:16}}>
                   {msg.role==='ai'?<Ic n="bot" s={16} c="#fff"/>:'👤'}
@@ -354,13 +347,8 @@ const CallInterface = () => {
                 </div>
               </div>
             ))}
-            {calling&&convIdx<CONV.length-1&&(
-              <div style={{display:'flex',gap:10}}>
-                <div style={{width:34,height:34,borderRadius:'50%',background:'linear-gradient(135deg,#764ba2,#2196f3)',display:'flex',alignItems:'center',justifyContent:'center'}}><Ic n="bot" s={16} c="#fff"/></div>
-                <div style={{background:'rgba(118,75,162,.08)',borderRadius:'4px 14px 14px 14px',padding:'12px 16px',border:'1px solid rgba(118,75,162,.15)',display:'flex',gap:5,alignItems:'center'}}>
-                  {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:'#764ba2',animation:`wave 1s ${i*.18}s ease-in-out infinite`}}/>)}
-                </div>
-              </div>
+            {transcription.length === 0 && !calling && (
+               <div style={{textAlign:'center',padding:60,color:'var(--text3)'}}>بانتظار مكالمة جديدة...</div>
             )}
           </div>
           {/* Waveform */}
@@ -374,60 +362,27 @@ const CallInterface = () => {
 
       {/* Side */}
       <div style={{display:'flex',flexDirection:'column',gap:14}}>
-        {/* Order */}
-        <div className="card-shadow" style={{background:'var(--card)',borderRadius:18,padding:20,border:'1px solid var(--border)'}}>
-          <div className="heading" style={{fontWeight:700,color:'#f59e0b',marginBottom:14,display:'flex',alignItems:'center',gap:7,fontSize:14}}>
-            <Ic n="list" s={15} c="#f59e0b"/>تفاصيل الطلب
-          </div>
-          {['شاورما دجاج ×2','بيبسي ×2'].map((it,i)=>(
-            <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--border)',fontSize:13,color:'var(--text)'}}>{it}</div>
-          ))}
-          <div style={{marginTop:10,paddingTop:10,display:'flex',justifyContent:'space-between',fontWeight:800,fontSize:15}}>
-            <span style={{color:'var(--text2)'}}>المجموع</span>
-            <span className="heading" style={{color:'#2196f3'}}>28₪</span>
-          </div>
-        </div>
-
-        {/* Customer */}
-        <div className="card-shadow" style={{background:'var(--card)',borderRadius:18,padding:20,border:'1px solid var(--border)'}}>
-          <div className="heading" style={{fontWeight:700,color:'#764ba2',marginBottom:14,display:'flex',alignItems:'center',gap:7,fontSize:14}}>
-            <Ic n="users" s={15} c="#764ba2"/>معلومات الزبون
-          </div>
-          {[['الموقع','رام الله - البيرة','#2196f3'],['طلبات سابقة','12 طلب','#00b96b'],['إجمالي الإنفاق','340₪','#f59e0b'],['آخر طلب','أمس','#764ba2']].map(([k,v,c])=>(
-            <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid var(--border)',fontSize:13}}>
-              <span style={{color:'var(--text3)'}}>{k}</span>
-              <span style={{color:c,fontWeight:700}}>{v}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* AI suggestion */}
-        <div style={{background:'linear-gradient(135deg,rgba(33,150,243,.09),rgba(118,75,162,.09))',borderRadius:18,padding:20,border:'1px solid rgba(33,150,243,.2)'}}>
-          <div className="heading" style={{fontWeight:700,color:'#2196f3',marginBottom:10,display:'flex',alignItems:'center',gap:7,fontSize:14}}>
-            <Ic n="zap" s={15} c="#2196f3"/>اقتراح الذكاء الاصطناعي
-          </div>
-          <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.7}}>الزبون سعيد — فرصة لعرض وجبة إضافية بخصم 10%. هذا سيزيد قيمة الطلب ~35%</p>
-          <button style={{marginTop:12,width:'100%',padding:'10px',borderRadius:10,border:'none',background:'var(--grad)',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'Tajawal'}}>
-            تطبيق الخصم 10% ✓
-          </button>
-        </div>
-
-        {/* Emotion */}
+        {/* Emotion Indicator (Simplified for demo) */}
         <div className="card-shadow" style={{background:'var(--card)',borderRadius:18,padding:20,border:'1px solid var(--border)'}}>
           <div className="heading" style={{fontWeight:700,color:'#00b96b',marginBottom:14,display:'flex',alignItems:'center',gap:7,fontSize:14}}>
-            <Ic n="smile" s={15} c="#00b96b"/>مؤشر المشاعر
+            <Ic n="smile" s={15} c="#00b96b"/>تحليل المشاعر اللحظي
           </div>
-          {[['السعادة',85,'#00b96b'],['الصبر',72,'#2196f3'],['الرضا',90,'#764ba2']].map(([l,v,c])=>(
-            <div key={l} style={{marginBottom:11}}>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:4}}>
-                <span style={{color:'var(--text2)',fontWeight:500}}>{l}</span>
-                <span style={{color:c,fontWeight:700}}>{v}%</span>
-              </div>
-              <div style={{height:6,borderRadius:3,background:'var(--bg3)'}}>
-                <div style={{height:'100%',width:`${v}%`,borderRadius:3,background:c,transition:'width 1.2s ease'}}/>
-              </div>
-            </div>
-          ))}
+          <div style={{textAlign:'center', padding:'20px 0'}}>
+             <div style={{fontSize:48}}>{emotion === 'angry' ? '😠' : emotion === 'happy' ? '😊' : '😐'}</div>
+             <div className="heading" style={{fontSize:18, fontWeight:800, marginTop:10, color: emotion === 'angry' ? '#ef4444' : '#00b96b'}}>
+                {emotion === 'angry' ? 'مستاء / غاضب' : emotion === 'happy' ? 'سعيد / راضٍ' : 'محايد'}
+             </div>
+          </div>
+        </div>
+
+        {/* AI Action Suggestion */}
+        <div style={{background:'linear-gradient(135deg,rgba(33,150,243,.09),rgba(118,75,162,.09))',borderRadius:18,padding:20,border:'1px solid rgba(33,150,243,.2)'}}>
+          <div className="heading" style={{fontWeight:700,color:'#2196f3',marginBottom:10,display:'flex',alignItems:'center',gap:7,fontSize:14}}>
+            <Ic n="zap" s={15} c="#2196f3"/>إجراء مقترح
+          </div>
+          <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.7}}>
+            {emotion === 'angry' ? 'الزبون غاضب. تم تفعيل بروتوكول الترضية: عرض خصم 15% فوري.' : 'الزبون مرتاح. تم عرض وجبات إضافية لزيادة قيمة الطلب.'}
+          </p>
         </div>
       </div>
     </div>
@@ -750,15 +705,77 @@ const App = () => {
   const [tweaks,setTweaks]=useState(TWEAK_DEFAULTS);
   const [showTweaks,setShowTweaks]=useState(false);
 
+  // Global State for Backend Data
+  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [calls, setCalls] = useState([]);
+  const [liveCall, setLiveCall] = useState(null);
+  const [liveTranscription, setLiveTranscription] = useState([]);
+  const [liveEmotion, setLiveEmotion] = useState('neutral');
+
   useEffect(()=>{
     document.body.className=dark?'dark-mode':'light-mode';
     localStorage.setItem('svr_dark',dark);
   },[dark]);
   useEffect(()=>{localStorage.setItem('svr_page',page);},[page]);
 
+  // Fetch initial data
+  useEffect(() => {
+    fetch(`${API_BASE}/api/orders`).then(r => r.json()).then(data => {
+      if (data.length > 0) setOrders(data.map(o => ({
+        id: o._id.slice(-6).toUpperCase(),
+        customer: 'زبون هاتف',
+        phone: o.customerPhone,
+        items: o.items.map(i => i.name),
+        total: o.totalPrice,
+        status: o.status,
+        time: new Date(o.createdAt).toLocaleTimeString('ar-PS', { hour: '2-digit', minute: '2-digit' }),
+        emotion: o.emotion,
+        discount: 0,
+        address: 'توصيل هاتف'
+      })));
+    });
+  }, []);
+
+  // WebSocket Connection
+  useEffect(() => {
+    const ws = new WebSocket(WS_URL);
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('WS Event:', data);
+      
+      switch(data.type) {
+        case 'CALL_START':
+          setLiveCall({ from: data.from, sid: data.sid, start: new Date() });
+          setLiveTranscription([]);
+          setPage('call'); // Switch to call page automatically!
+          break;
+        case 'TRANSCRIPTION':
+          setLiveTranscription(prev => [...prev, { role: 'customer', text: data.text, time: new Date().toLocaleTimeString() }]);
+          break;
+        case 'AI_RESPONSE':
+          setLiveTranscription(prev => [...prev, { role: 'ai', text: data.text, time: new Date().toLocaleTimeString() }]);
+          break;
+        case 'EMOTION':
+          setLiveEmotion(data.level);
+          break;
+        case 'NEW_ORDER':
+          // Refresh orders
+          fetch(`${API_BASE}/api/orders`).then(r => r.json()).then(setOrders);
+          break;
+      }
+    };
+    return () => ws.close();
+  }, []);
+
   const setTweak=(k,v)=>setTweaks(t=>({...t,[k]:v}));
 
-  const pages={landing:<Landing setPage={setPage}/>,call:<CallInterface/>,orders:<Orders/>,dashboard:<Dashboard/>,analytics:<Analytics/>};
+  const pages={
+    landing:<Landing setPage={setPage}/>,
+    call:<CallInterface liveCall={liveCall} transcription={liveTranscription} emotion={liveEmotion}/>,
+    orders:<Orders orders={orders}/>,
+    dashboard:<Dashboard orders={orders}/>,
+    analytics:<Analytics orders={orders}/>
+  };
 
   return(
     <div style={{'--p1':tweaks.accentColor,'--p2':tweaks.secondaryColor,'--grad':`linear-gradient(135deg,${tweaks.accentColor},${tweaks.secondaryColor})`,fontSize:`${tweaks.fontScale}rem`}}>
